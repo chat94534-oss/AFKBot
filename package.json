@@ -1,0 +1,14 @@
+{
+  "name": "afkbot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Headless Minecraft AFK bot that runs on GitHub Actions",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node index.js --selftest"
+  },
+  "dependencies": {
+    "mineflayer": "4.39.0"
+  }
+}

@@ -1,0 +1,37 @@
+name: afk
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Fires hourly. The concurrency group below keeps exactly one run alive
+    # and one queued, so the queued run starts the instant the 5h45m one ends.
+    - cron: '17 * * * *'
+
+concurrency:
+  group: afk
+  cancel-in-progress: false
+
+jobs:
+  afk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: npm ci --omit=dev
+
+      - run: npm test
+
+      - name: Run AFK bot
+        env:
+          MC_HOST: ${{ secrets.MC_HOST }}
+          MC_PORT: ${{ secrets.MC_PORT }}
+          MC_USERNAME: ${{ secrets.MC_USERNAME }}
+          MC_AUTH: ${{ vars.MC_AUTH }}
+          MC_VERSION: ${{ vars.MC_VERSION }}
+        # 5h45m, then exit cleanly so the queued run takes over.
+        run: timeout --preserve-status 20700 node index.js || true
