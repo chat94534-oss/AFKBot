@@ -29,7 +29,7 @@ A hosted server, a public IP with port 25565 forwarded, or a domain all work.
 
    | Variable | Required | Notes |
    |---|---|---|
-   | `MC_AUTH` | no (default `offline`) | `offline` for cracked servers, `microsoft` for premium |
+   | `MC_AUTH` | no (default `offline`) | see [Which auth mode?](#which-auth-mode) below |
    | `MC_VERSION` | no (auto-detect) | Set to e.g. `1.20.4` if auto-detect picks wrong |
 
 3. Go to **Actions → afk → Run workflow** to start it. After that the hourly schedule
@@ -42,13 +42,26 @@ then exits. Meanwhile the hourly cron keeps a second run queued behind the
 `afk` concurrency group, so it starts the moment the first one finishes. Extra cron
 ticks cancel each other while pending and cost nothing.
 
+## Which auth mode?
+
+This depends on one line in your server's `server.properties`:
+
+- **`online-mode=false`** — the server does not check accounts against Mojang, so the
+  bot can join with any username. Leave `MC_AUTH` unset. This is the easy case and it
+  is what this bot is built for. (Servers like this are often called "cracked" — that
+  is just community slang for the setting. Nothing is being broken into.)
+- **`online-mode=true`** — the default. The server verifies every player against
+  Microsoft, so the bot needs its own real Minecraft account. Set `MC_AUTH` to
+  `microsoft`, and read the caveat below first, because this does not work well on a
+  disposable runner.
+
 ## Caveats
 
 - **GitHub disables scheduled workflows after 60 days with no commits to the repo.**
   Push any commit every couple of months, or GitHub will email you and stop the cron.
-- **Premium (`microsoft`) accounts are awkward here.** Microsoft auth needs an
-  interactive device-code login and a cached token, which does not survive an
-  ephemeral runner. Offline-mode (cracked) servers are what this is built for.
+- **`microsoft` auth is awkward here.** It needs an interactive device-code login and
+  a cached token, which does not survive an ephemeral runner. Servers running
+  `online-mode=false` are what this is built for.
 - **This is not what GitHub Actions is for.** GitHub's terms restrict Actions to work
   related to building, testing, and deploying software. A bot idling in a game is not
   that, and running it around the clock can get the repo or account flagged. Your call.

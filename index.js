@@ -1,7 +1,7 @@
 const HOST = process.env.MC_HOST
 const PORT = parseInt(process.env.MC_PORT || '25565', 10)
 const USERNAME = process.env.MC_USERNAME || 'AFKBot'
-const AUTH = process.env.MC_AUTH || 'offline'          // 'offline' (cracked) | 'microsoft'
+const AUTH = process.env.MC_AUTH || 'offline'          // 'offline' (online-mode=false server) | 'microsoft'
 const VERSION = process.env.MC_VERSION || false        // false = auto-detect from server
 
 const log = (...a) => console.log(new Date().toISOString(), ...a)
