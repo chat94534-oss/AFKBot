@@ -6,17 +6,15 @@ const VERSION = process.env.MC_VERSION || false        // false = auto-detect fr
 
 const log = (...a) => console.log(new Date().toISOString(), ...a)
 
-// Reconnect delay in seconds: 10, 20, 40, ... capped at 5 min.
-function backoff (attempt) {
-  return Math.min(300, 10 * 2 ** Math.min(attempt - 1, 6))
-}
+// Retry hard and never back off. When the host restarts, wakes from sleep, or
+// still holds a ghost session under this name, the only thing that matters is
+// being back in the player list the instant it accepts us again.
+const RETRY_SECONDS = 5
 
 if (process.argv[2] === '--selftest') {
   const assert = require('assert')
-  assert.strictEqual(backoff(1), 10)
-  assert.strictEqual(backoff(2), 20)
-  assert.strictEqual(backoff(4), 80)
-  assert.strictEqual(backoff(99), 300)
+  assert.ok(RETRY_SECONDS > 0 && RETRY_SECONDS <= 15, 'retry must stay aggressive')
+  assert.strictEqual(PORT, 25565, 'default port')
   assert.ok(require('mineflayer'), 'mineflayer not installed')
   console.log('selftest ok')
   process.exit(0)
@@ -69,9 +67,8 @@ function start () {
   bot.on('end', reason => {
     clearInterval(jiggle)
     attempt++
-    const wait = backoff(attempt)
-    log(`disconnected (${reason}); reconnecting in ${wait}s`)
-    setTimeout(start, wait * 1000)
+    log(`disconnected (${reason}); retry #${attempt} in ${RETRY_SECONDS}s`)
+    setTimeout(start, RETRY_SECONDS * 1000)
   })
 }
 
