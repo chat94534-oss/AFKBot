@@ -46,12 +46,16 @@ function start () {
   bot.once('spawn', () => {
     attempt = 0
     log('spawned at', bot.entity.position.toString())
-    // Anti-AFK: short hop + random look every 45s. Most idle-kick plugins
-    // fire at 3-5 minutes, so this stays well inside the window.
+    // Anti-AFK: short hop + a small smooth turn every 45s. Most idle-kick
+    // plugins fire at 3-5 minutes, so this stays well inside the window.
+    // The turn is relative, small, and interpolated (force=false) because an
+    // instant snap to a random angle reads as aim-snapping to anticheats.
     jiggle = setInterval(() => {
       bot.setControlState('jump', true)
       setTimeout(() => bot.setControlState('jump', false), 300)
-      bot.look(Math.random() * Math.PI * 2, (Math.random() - 0.5) * 0.8, true)
+      const yaw = bot.entity.yaw + (Math.random() - 0.5) * 0.5
+      const pitch = Math.max(-0.4, Math.min(0.4, bot.entity.pitch + (Math.random() - 0.5) * 0.2))
+      bot.look(yaw, pitch, false).catch(() => {})
     }, 45000)
   })
 
